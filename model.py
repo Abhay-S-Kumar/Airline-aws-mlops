@@ -22,9 +22,33 @@ def train():
 
     # 2. Load Data
     
-    file_path = os.path.join(args.train,"Airline.csv")
+    # 2. Load Data (Smart Path Finder)
+    print("DEBUG: Searching for dataset...")
+    file_path = None
     
+    # Check if running in SageMaker (look in /opt/ml/input/data)
+    if os.path.exists('/opt/ml/input/data'):
+        # Walk through directories to find the file regardless of channel name
+        for root, dirs, files in os.walk('/opt/ml/input/data'):
+            if "Airline.csv" in files:
+                file_path = os.path.join(root, "Airline.csv")
+                print(f"DEBUG: Found file in SageMaker: {file_path}")
+                break
     
+    # Fallback: If not found (or running on local laptop), use default 'data' folder
+    if file_path is None:
+        file_path = os.path.join(args.train, "Airline.csv")
+        print(f"DEBUG: Falling back to local/default path: {file_path}")
+
+    # Final Safety Check
+    if not os.path.exists(file_path):
+        # List directories to help debug if it fails again
+        print("DEBUG: Listing directories in /opt/ml/input/data:")
+        if os.path.exists('/opt/ml/input/data'):
+            for root, dirs, files in os.walk('/opt/ml/input/data'):
+                print(f" - {root}: {files}")
+        raise FileNotFoundError(f"CRITICAL: Could not find Airline.csv. Searched in /opt/ml/input/data and {args.train}")
+
     df = pd.read_csv(file_path)
 
     # 3. Preprocessing
