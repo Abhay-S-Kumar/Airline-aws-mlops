@@ -3,14 +3,14 @@ name: MLOps Airline Pipeline
 on:
   push:
     branches:
-      - main  # Trigger only on pushes to the main branch
+      - main
 
 jobs:
   build-and-train:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Download your code
+    # 1. Download Code
     - name: Checkout Code
       uses: actions/checkout@v3
 
@@ -22,18 +22,35 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    # 3. Setup Python
+    # 3. Login to Amazon ECR (This allows us to upload the image)
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    # 4. Build and Push Docker Image
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: airline-train
+        IMAGE_TAG: latest
+      run: |
+        # Build the container
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        # Push it to AWS
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    # 5. Setup Python
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
 
-    # 4. Install Libraries
+    # 6. Install Libraries
     - name: Install Dependencies
       run: |
         pip install boto3
 
-    # 5. Run the Training Trigger
+    # 7. Run the Training Trigger
     - name: Trigger SageMaker Training
       run: |
         python trigger_training.py
