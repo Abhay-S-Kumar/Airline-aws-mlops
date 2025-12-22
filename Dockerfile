@@ -1,13 +1,11 @@
 # Start with a lightweight Linux + Python base image
 FROM python:3.9-slim
 
-# Set the working directory inside the container
-WORKDIR /opt/ml/code
+# This line forces a cache update - Date: Dec 22
+ENV REFRESH_DATE=2025-12-22
 
-# Copy the requirements file and install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
+RUN pip install --no-cache-dir pandas scikit-learn joblib
+# ... (rest of your file stays the same)
 # ---------------- CHANGES START HERE ----------------
 # Copy model.py instead of train.py
 COPY model.py .
