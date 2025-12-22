@@ -17,7 +17,7 @@ def train():
     parser.add_argument('--model-dir', type=str, default=os.environ.get('SM_MODEL_DIR', 'models'))
     parser.add_argument('--train', type=str, default=os.environ.get('SM_CHANNEL_TRAIN', 'data'))
     
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     # 2. Load Data
     
