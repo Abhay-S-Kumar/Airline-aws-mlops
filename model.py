@@ -84,9 +84,22 @@ def train():
     
 
     # 6. Save Model
-    # Important: SageMaker reads the model from this specific path to deploy it later
-    model_path = os.path.join(args.model_dir, "model.joblib")
+    # 6. Save Model
+    # Logic: If running in SageMaker, we MUST save to /opt/ml/model
+    # otherwise SageMaker will not upload the model to S3.
+    
+    if os.path.exists('/opt/ml/model'):
+        save_dir = '/opt/ml/model'
+    else:
+        # Fallback for local testing
+        save_dir = args.model_dir
+    
+    # IMPORTANT: Create the directory if it doesn't exist!
+    os.makedirs(save_dir, exist_ok=True)
+
+    model_path = os.path.join(save_dir, "model.joblib")
     joblib.dump(model, model_path)
+    print(f"SUCCESS: Model saved to {model_path}")
    
 if __name__ == '__main__':
     train()
