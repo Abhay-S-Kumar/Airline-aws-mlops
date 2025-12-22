@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
 def train():
+    print("DEBUG: Starting training with fixed argparse!")
     # 1. Parse Arguments
     # SageMaker passes specific arguments for input/output directories
     parser = argparse.ArgumentParser()
